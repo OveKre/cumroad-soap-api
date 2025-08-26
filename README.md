@@ -29,16 +29,20 @@ This SOAP service provides the same functionality as the original REST API, incl
  ├── wsdl/              # WSDL and XSD files
  │   └── cumroad-api.wsdl
  ├── src/               # Source code
- │   └── soap_service.py
+ │   ├── soap_service.py         # Original Spyne implementation
+ │   └── simple_soap_service.py  # Working Flask SOAP service
  ├── scripts/           # Build and run scripts
  │   ├── run.sh         # Linux/Mac run script
- │   └── run.ps1        # Windows PowerShell script
+ │   ├── run.ps1        # Windows PowerShell script
+ │   └── test.ps1       # Basic SOAP service tests
  ├── client/            # Client examples
  │   ├── example.py     # Python client demonstration
  │   └── requirements.txt
- ├── tests/             # Automated tests
- │   ├── test.sh        # Linux/Mac test script
- │   └── test.ps1       # Windows PowerShell test script
+ ├── tests/             # Advanced testing and comparison
+ │   ├── test.sh                # Linux/Mac test script
+ │   ├── compare-rest-soap.ps1  # REST vs SOAP comparison test
+ │   ├── compare-analysis.py    # Python response analysis tool
+ │   └── response-analysis.md   # Detailed comparison documentation
  ├── Dockerfile         # Docker container configuration
  ├── docker-compose.yml # Docker Compose configuration
  ├── requirements.txt   # Python dependencies
