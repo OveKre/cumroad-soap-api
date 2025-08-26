@@ -1,0 +1,794 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://cumroad.api.soap/service"
+             xmlns:types="http://cumroad.api.soap/types"
+             targetNamespace="http://cumroad.api.soap/service">
+
+    <types>
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                   targetNamespace="http://cumroad.api.soap/types"
+                   elementFormDefault="qualified">
+
+            <!-- Common Types -->
+            <xs:simpleType name="UserRole">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="user"/>
+                    <xs:enumeration value="admin"/>
+                </xs:restriction>
+            </xs:simpleType>
+
+            <xs:simpleType name="OrderStatus">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="pending"/>
+                    <xs:enumeration value="completed"/>
+                    <xs:enumeration value="cancelled"/>
+                </xs:restriction>
+            </xs:simpleType>
+
+            <!-- User Types -->
+            <xs:complexType name="User">
+                <xs:sequence>
+                    <xs:element name="id" type="xs:int"/>
+                    <xs:element name="email" type="xs:string"/>
+                    <xs:element name="name" type="xs:string"/>
+                    <xs:element name="role" type="types:UserRole"/>
+                    <xs:element name="createdAt" type="xs:dateTime"/>
+                    <xs:element name="updatedAt" type="xs:dateTime"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <xs:complexType name="UserWithToken">
+                <xs:complexContent>
+                    <xs:extension base="types:User">
+                        <xs:sequence>
+                            <xs:element name="token" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+
+            <xs:complexType name="UserInput">
+                <xs:sequence>
+                    <xs:element name="email" type="xs:string"/>
+                    <xs:element name="password" type="xs:string"/>
+                    <xs:element name="name" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <xs:complexType name="UserUpdateInput">
+                <xs:sequence>
+                    <xs:element name="name" type="xs:string" minOccurs="0"/>
+                    <xs:element name="password" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <xs:complexType name="LoginInput">
+                <xs:sequence>
+                    <xs:element name="email" type="xs:string"/>
+                    <xs:element name="password" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <!-- Product Types -->
+            <xs:complexType name="Product">
+                <xs:sequence>
+                    <xs:element name="id" type="xs:int"/>
+                    <xs:element name="name" type="xs:string"/>
+                    <xs:element name="description" type="xs:string"/>
+                    <xs:element name="price" type="xs:double"/>
+                    <xs:element name="imageUrl" type="xs:string"/>
+                    <xs:element name="userId" type="xs:int"/>
+                    <xs:element name="createdAt" type="xs:dateTime"/>
+                    <xs:element name="updatedAt" type="xs:dateTime"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <xs:complexType name="ProductInput">
+                <xs:sequence>
+                    <xs:element name="name" type="xs:string"/>
+                    <xs:element name="description" type="xs:string" minOccurs="0"/>
+                    <xs:element name="price" type="xs:double"/>
+                    <xs:element name="imageUrl" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <xs:complexType name="ProductUpdateInput">
+                <xs:sequence>
+                    <xs:element name="name" type="xs:string" minOccurs="0"/>
+                    <xs:element name="description" type="xs:string" minOccurs="0"/>
+                    <xs:element name="price" type="xs:double" minOccurs="0"/>
+                    <xs:element name="imageUrl" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <!-- Order Types -->
+            <xs:complexType name="Order">
+                <xs:sequence>
+                    <xs:element name="id" type="xs:int"/>
+                    <xs:element name="userId" type="xs:int"/>
+                    <xs:element name="productId" type="xs:int"/>
+                    <xs:element name="quantity" type="xs:int"/>
+                    <xs:element name="totalPrice" type="xs:double"/>
+                    <xs:element name="status" type="types:OrderStatus"/>
+                    <xs:element name="createdAt" type="xs:dateTime"/>
+                    <xs:element name="updatedAt" type="xs:dateTime"/>
+                    <xs:element name="Product" type="types:Product" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <xs:complexType name="OrderInput">
+                <xs:sequence>
+                    <xs:element name="productId" type="xs:int"/>
+                    <xs:element name="quantity" type="xs:int"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <xs:complexType name="OrderUpdateInput">
+                <xs:sequence>
+                    <xs:element name="quantity" type="xs:int" minOccurs="0"/>
+                    <xs:element name="status" type="types:OrderStatus" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <!-- Arrays -->
+            <xs:complexType name="UserArray">
+                <xs:sequence>
+                    <xs:element name="user" type="types:User" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <xs:complexType name="ProductArray">
+                <xs:sequence>
+                    <xs:element name="product" type="types:Product" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <xs:complexType name="OrderArray">
+                <xs:sequence>
+                    <xs:element name="order" type="types:Order" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <!-- SOAP Fault -->
+            <xs:complexType name="ServiceFault">
+                <xs:sequence>
+                    <xs:element name="type" type="xs:string"/>
+                    <xs:element name="title" type="xs:string"/>
+                    <xs:element name="status" type="xs:int"/>
+                    <xs:element name="detail" type="xs:string"/>
+                    <xs:element name="instance" type="xs:string" minOccurs="0"/>
+                    <xs:element name="code" type="xs:int" minOccurs="0"/>
+                    <xs:element name="field" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+
+            <!-- Request/Response Elements -->
+            
+            <!-- User Operations -->
+            <xs:element name="GetAllUsersRequest">
+                <xs:complexType/>
+            </xs:element>
+            <xs:element name="GetAllUsersResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="users" type="types:UserArray"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="CreateUserRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="user" type="types:UserInput"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="CreateUserResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="user" type="types:User"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="GetUserByIdRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="id" type="xs:int"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetUserByIdResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="user" type="types:User"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="UpdateUserRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="id" type="xs:int"/>
+                        <xs:element name="user" type="types:UserUpdateInput"/>
+                        <xs:element name="token" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="UpdateUserResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="user" type="types:User"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="DeleteUserRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="id" type="xs:int"/>
+                        <xs:element name="token" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="DeleteUserResponse">
+                <xs:complexType/>
+            </xs:element>
+
+            <!-- Session Operations -->
+            <xs:element name="LoginRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="credentials" type="types:LoginInput"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="LoginResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="user" type="types:UserWithToken"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="LogoutRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="token" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="LogoutResponse">
+                <xs:complexType/>
+            </xs:element>
+
+            <!-- Product Operations -->
+            <xs:element name="GetAllProductsRequest">
+                <xs:complexType/>
+            </xs:element>
+            <xs:element name="GetAllProductsResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="products" type="types:ProductArray"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="CreateProductRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="product" type="types:ProductInput"/>
+                        <xs:element name="token" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="CreateProductResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="product" type="types:Product"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="GetProductByIdRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="id" type="xs:int"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetProductByIdResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="product" type="types:Product"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="UpdateProductRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="id" type="xs:int"/>
+                        <xs:element name="product" type="types:ProductUpdateInput"/>
+                        <xs:element name="token" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="UpdateProductResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="product" type="types:Product"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="DeleteProductRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="id" type="xs:int"/>
+                        <xs:element name="token" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="DeleteProductResponse">
+                <xs:complexType/>
+            </xs:element>
+
+            <!-- Order Operations -->
+            <xs:element name="GetAllOrdersRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="token" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetAllOrdersResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="orders" type="types:OrderArray"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="CreateOrderRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="order" type="types:OrderInput"/>
+                        <xs:element name="token" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="CreateOrderResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="order" type="types:Order"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="GetOrderByIdRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="id" type="xs:int"/>
+                        <xs:element name="token" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetOrderByIdResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="order" type="types:Order"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="UpdateOrderRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="id" type="xs:int"/>
+                        <xs:element name="order" type="types:OrderUpdateInput"/>
+                        <xs:element name="token" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="UpdateOrderResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="order" type="types:Order"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="DeleteOrderRequest">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="id" type="xs:int"/>
+                        <xs:element name="token" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="DeleteOrderResponse">
+                <xs:complexType/>
+            </xs:element>
+
+            <!-- Fault Element -->
+            <xs:element name="ServiceFaultElement" type="types:ServiceFault"/>
+
+        </xs:schema>
+    </types>
+
+    <!-- Messages -->
+    <!-- User Messages -->
+    <message name="GetAllUsersRequest">
+        <part name="parameters" element="types:GetAllUsersRequest"/>
+    </message>
+    <message name="GetAllUsersResponse">
+        <part name="parameters" element="types:GetAllUsersResponse"/>
+    </message>
+
+    <message name="CreateUserRequest">
+        <part name="parameters" element="types:CreateUserRequest"/>
+    </message>
+    <message name="CreateUserResponse">
+        <part name="parameters" element="types:CreateUserResponse"/>
+    </message>
+
+    <message name="GetUserByIdRequest">
+        <part name="parameters" element="types:GetUserByIdRequest"/>
+    </message>
+    <message name="GetUserByIdResponse">
+        <part name="parameters" element="types:GetUserByIdResponse"/>
+    </message>
+
+    <message name="UpdateUserRequest">
+        <part name="parameters" element="types:UpdateUserRequest"/>
+    </message>
+    <message name="UpdateUserResponse">
+        <part name="parameters" element="types:UpdateUserResponse"/>
+    </message>
+
+    <message name="DeleteUserRequest">
+        <part name="parameters" element="types:DeleteUserRequest"/>
+    </message>
+    <message name="DeleteUserResponse">
+        <part name="parameters" element="types:DeleteUserResponse"/>
+    </message>
+
+    <!-- Session Messages -->
+    <message name="LoginRequest">
+        <part name="parameters" element="types:LoginRequest"/>
+    </message>
+    <message name="LoginResponse">
+        <part name="parameters" element="types:LoginResponse"/>
+    </message>
+
+    <message name="LogoutRequest">
+        <part name="parameters" element="types:LogoutRequest"/>
+    </message>
+    <message name="LogoutResponse">
+        <part name="parameters" element="types:LogoutResponse"/>
+    </message>
+
+    <!-- Product Messages -->
+    <message name="GetAllProductsRequest">
+        <part name="parameters" element="types:GetAllProductsRequest"/>
+    </message>
+    <message name="GetAllProductsResponse">
+        <part name="parameters" element="types:GetAllProductsResponse"/>
+    </message>
+
+    <message name="CreateProductRequest">
+        <part name="parameters" element="types:CreateProductRequest"/>
+    </message>
+    <message name="CreateProductResponse">
+        <part name="parameters" element="types:CreateProductResponse"/>
+    </message>
+
+    <message name="GetProductByIdRequest">
+        <part name="parameters" element="types:GetProductByIdRequest"/>
+    </message>
+    <message name="GetProductByIdResponse">
+        <part name="parameters" element="types:GetProductByIdResponse"/>
+    </message>
+
+    <message name="UpdateProductRequest">
+        <part name="parameters" element="types:UpdateProductRequest"/>
+    </message>
+    <message name="UpdateProductResponse">
+        <part name="parameters" element="types:UpdateProductResponse"/>
+    </message>
+
+    <message name="DeleteProductRequest">
+        <part name="parameters" element="types:DeleteProductRequest"/>
+    </message>
+    <message name="DeleteProductResponse">
+        <part name="parameters" element="types:DeleteProductResponse"/>
+    </message>
+
+    <!-- Order Messages -->
+    <message name="GetAllOrdersRequest">
+        <part name="parameters" element="types:GetAllOrdersRequest"/>
+    </message>
+    <message name="GetAllOrdersResponse">
+        <part name="parameters" element="types:GetAllOrdersResponse"/>
+    </message>
+
+    <message name="CreateOrderRequest">
+        <part name="parameters" element="types:CreateOrderRequest"/>
+    </message>
+    <message name="CreateOrderResponse">
+        <part name="parameters" element="types:CreateOrderResponse"/>
+    </message>
+
+    <message name="GetOrderByIdRequest">
+        <part name="parameters" element="types:GetOrderByIdRequest"/>
+    </message>
+    <message name="GetOrderByIdResponse">
+        <part name="parameters" element="types:GetOrderByIdResponse"/>
+    </message>
+
+    <message name="UpdateOrderRequest">
+        <part name="parameters" element="types:UpdateOrderRequest"/>
+    </message>
+    <message name="UpdateOrderResponse">
+        <part name="parameters" element="types:UpdateOrderResponse"/>
+    </message>
+
+    <message name="DeleteOrderRequest">
+        <part name="parameters" element="types:DeleteOrderRequest"/>
+    </message>
+    <message name="DeleteOrderResponse">
+        <part name="parameters" element="types:DeleteOrderResponse"/>
+    </message>
+
+    <!-- Fault Message -->
+    <message name="ServiceFault">
+        <part name="fault" element="types:ServiceFaultElement"/>
+    </message>
+
+    <!-- Port Type -->
+    <portType name="CumRoadServicePortType">
+        <!-- User Operations -->
+        <operation name="GetAllUsers">
+            <input message="tns:GetAllUsersRequest"/>
+            <output message="tns:GetAllUsersResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="CreateUser">
+            <input message="tns:CreateUserRequest"/>
+            <output message="tns:CreateUserResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="GetUserById">
+            <input message="tns:GetUserByIdRequest"/>
+            <output message="tns:GetUserByIdResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="UpdateUser">
+            <input message="tns:UpdateUserRequest"/>
+            <output message="tns:UpdateUserResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="DeleteUser">
+            <input message="tns:DeleteUserRequest"/>
+            <output message="tns:DeleteUserResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <!-- Session Operations -->
+        <operation name="Login">
+            <input message="tns:LoginRequest"/>
+            <output message="tns:LoginResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="Logout">
+            <input message="tns:LogoutRequest"/>
+            <output message="tns:LogoutResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <!-- Product Operations -->
+        <operation name="GetAllProducts">
+            <input message="tns:GetAllProductsRequest"/>
+            <output message="tns:GetAllProductsResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="CreateProduct">
+            <input message="tns:CreateProductRequest"/>
+            <output message="tns:CreateProductResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="GetProductById">
+            <input message="tns:GetProductByIdRequest"/>
+            <output message="tns:GetProductByIdResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="UpdateProduct">
+            <input message="tns:UpdateProductRequest"/>
+            <output message="tns:UpdateProductResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="DeleteProduct">
+            <input message="tns:DeleteProductRequest"/>
+            <output message="tns:DeleteProductResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <!-- Order Operations -->
+        <operation name="GetAllOrders">
+            <input message="tns:GetAllOrdersRequest"/>
+            <output message="tns:GetAllOrdersResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="CreateOrder">
+            <input message="tns:CreateOrderRequest"/>
+            <output message="tns:CreateOrderResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="GetOrderById">
+            <input message="tns:GetOrderByIdRequest"/>
+            <output message="tns:GetOrderByIdResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="UpdateOrder">
+            <input message="tns:UpdateOrderRequest"/>
+            <output message="tns:UpdateOrderResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+
+        <operation name="DeleteOrder">
+            <input message="tns:DeleteOrderRequest"/>
+            <output message="tns:DeleteOrderResponse"/>
+            <fault name="ServiceFault" message="tns:ServiceFault"/>
+        </operation>
+    </portType>
+
+    <!-- Binding -->
+    <binding name="CumRoadServiceBinding" type="tns:CumRoadServicePortType">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+
+        <!-- User Operations -->
+        <operation name="GetAllUsers">
+            <soap:operation soapAction="http://cumroad.api.soap/service/GetAllUsers"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="CreateUser">
+            <soap:operation soapAction="http://cumroad.api.soap/service/CreateUser"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="GetUserById">
+            <soap:operation soapAction="http://cumroad.api.soap/service/GetUserById"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="UpdateUser">
+            <soap:operation soapAction="http://cumroad.api.soap/service/UpdateUser"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="DeleteUser">
+            <soap:operation soapAction="http://cumroad.api.soap/service/DeleteUser"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <!-- Session Operations -->
+        <operation name="Login">
+            <soap:operation soapAction="http://cumroad.api.soap/service/Login"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="Logout">
+            <soap:operation soapAction="http://cumroad.api.soap/service/Logout"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <!-- Product Operations -->
+        <operation name="GetAllProducts">
+            <soap:operation soapAction="http://cumroad.api.soap/service/GetAllProducts"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="CreateProduct">
+            <soap:operation soapAction="http://cumroad.api.soap/service/CreateProduct"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="GetProductById">
+            <soap:operation soapAction="http://cumroad.api.soap/service/GetProductById"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="UpdateProduct">
+            <soap:operation soapAction="http://cumroad.api.soap/service/UpdateProduct"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="DeleteProduct">
+            <soap:operation soapAction="http://cumroad.api.soap/service/DeleteProduct"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <!-- Order Operations -->
+        <operation name="GetAllOrders">
+            <soap:operation soapAction="http://cumroad.api.soap/service/GetAllOrders"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="CreateOrder">
+            <soap:operation soapAction="http://cumroad.api.soap/service/CreateOrder"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="GetOrderById">
+            <soap:operation soapAction="http://cumroad.api.soap/service/GetOrderById"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="UpdateOrder">
+            <soap:operation soapAction="http://cumroad.api.soap/service/UpdateOrder"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+
+        <operation name="DeleteOrder">
+            <soap:operation soapAction="http://cumroad.api.soap/service/DeleteOrder"/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+            <fault name="ServiceFault"><soap:fault name="ServiceFault" use="literal"/></fault>
+        </operation>
+    </binding>
+
+    <!-- Service -->
+    <service name="CumRoadService">
+        <port name="CumRoadServicePort" binding="tns:CumRoadServiceBinding">
+            <soap:address location="http://localhost:8080/soap"/>
+        </port>
+    </service>
+
+</definitions>

@@ -1,0 +1,7 @@
+Flask==2.3.3
+Flask-BasicAuth==0.2.0
+spyne==2.14.0
+six
+PyJWT==2.8.0
+lxml==4.9.3
+Werkzeug==2.3.7
